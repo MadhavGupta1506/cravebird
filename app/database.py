@@ -1,0 +1,27 @@
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from .config import settings
+
+import ssl
+
+ssl_context = ssl.create_default_context()
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
+# SQLALCHEMY_DATABASE_URL defines the connection string for the PostgreSQL database.
+# Format: "postgresql://<username>:<password>@<ip-address/hostname>/<database_name>"
+# postgresql+asyncpg://<username>:<password>@<host>:<port>/<database_name>
+SQLALCHEMY_DATABASE_URL = f"postgresql+asyncpg://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
+
+
+# Create a session factory for managing database sessions.
+engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True, future=True,connect_args={"statement_cache_size": 0, "ssl": ssl_context})
+
+AsyncSessionLocal = sessionmaker(bind=engine,class_=AsyncSession,expire_on_commit=False)
+# Base class for declarative models.
+Base = declarative_base()
+
+# Dependency function to get a database session.
+async def get_db():
+    async with AsyncSessionLocal() as db:  # Ensures proper session management
+        yield db  # Yield the session for use in a request
