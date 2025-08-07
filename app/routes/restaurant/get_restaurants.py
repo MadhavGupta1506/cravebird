@@ -24,3 +24,13 @@ async def get_restaurants_by_id(id:str, user:models.Users=Depends(oauth2.get_cur
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"No Restaurants Found with id {id}!")
     
     return res
+
+@router.get("/name/{name}",response_model=list[schemas.RestaurantOut])
+async def get_restaurants_by_name(name:str, user:models.Users=Depends(oauth2.get_current_user), db:AsyncSession=Depends(get_db)):
+    res= await db.execute(select(models.Restaurants).where(models.Restaurants.restaurant_name.ilike(f"%{name}%")))
+    res=res.scalars().all()
+    if(not res):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"No Restaurants Found with name {name}!")
+    
+    return res
+

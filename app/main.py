@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 from . import database, models
 from .routes import login_signup
-from .routes.restaurant import get_restaurants,menu
+from .routes.restaurant import get_restaurants, menu
 
 
 @asynccontextmanager
