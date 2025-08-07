@@ -21,3 +21,12 @@ class Restaurants(Base):
     restaurant_address=Column(String,nullable=False)
     restaurant_cuisine=Column(String,nullable=False)
     restaurant_rating=Column(FLOAT,nullable=False)
+    
+class Menu(Base):
+    __tablename__ = 'menu'
+    id=Column(Integer,primary_key=True,index=True,autoincrement=True)
+    res_id=Column(String,nullable=False)
+    restaurant=Column(String,nullable=False)
+    category=Column(String,nullable=False)
+    item_name=Column(String,nullable=False)
+    price=Column(FLOAT,nullable=False)
