@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 from . import database, models
 from .routes import login_signup
 from .routes.restaurant import get_restaurants, menu
+from .routes.user import Address
+
 
 
 @asynccontextmanager
@@ -28,6 +30,7 @@ app.add_middleware(
 app.include_router(login_signup.router)
 app.include_router(get_restaurants.router)
 app.include_router(menu.router)
+app.include_router(Address.router)
 
 
 @app.get("/")

@@ -26,3 +26,20 @@ async def add_to_menu(menu:schemas.menuCreate,user:models.Users=Depends(oauth2.g
     await db.commit()
     await db.refresh(new_menu)
     return new_menu
+
+# @router.delete("/delete/{id}",status_code=status.HTTP_204_NO_CONTENT)
+# async def delete_from_menu(id:int,user:models.Users,db:AsyncSession=Depends(database.get_db)):
+#     res=await db.execute(select(models.Menu).where(models.Menu.id==id))
+#     res=res.scalar_one()
+#     if(not res):
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No Menu Found!")
+#     db.delete(synchronize_session=False)
+#     await db.commit()
+#     return
+
+# @router.put("/update/{id}",response_model=schemas.menuOut)
+# async def update_menu(id:int,menu:schemas.menuCreate,user:models.Users=Depends(oauth2.get_current_user),db:AsyncSession=Depends(database.get_db)):
+#     res=await db.execute(select(models.Menu).where(models.Menu.id==id))
+#     res=res.scalar_one()
+#     if(not res):
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No Menu Found!")
