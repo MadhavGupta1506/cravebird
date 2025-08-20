@@ -1,0 +1,63 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from uuid import uuid4
+from ..oauth2 import get_current_user, require_role
+
+from app.models.product import Product
+from app.models import user as user_table
+from app.schemas import product 
+from app.database import get_db
+
+router = APIRouter(prefix="/products", tags=["Products"])
+
+# CREATE
+@router.post("/", response_model=product.ProductOut, status_code=status.HTTP_201_CREATED)
+async def create_product(product: product.ProductCreate,user:user_table=Depends(get_current_user), db: AsyncSession = Depends(get_db),role:str=Depends(require_role(["admin","vendor"]))):
+    new_product = Product(id=uuid4(), **product.model_dump(),vendor_id=user.id)
+    db.add(new_product)
+    await db.commit()
+    await db.refresh(new_product)
+    return new_product
+
+# READ (all)
+@router.get("/", response_model=list[product.ProductOut])
+async def get_products(db: AsyncSession = Depends(get_db),):
+    res = await db.execute(select(Product))
+    return res.scalars().all()
+
+# READ (one)
+@router.get("/{product_id}", response_model=product.ProductOut)
+async def get_product(product_id: str, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(Product).where(Product.id == product_id))
+    product = res.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    return product
+
+# UPDATE
+@router.put("/{product_id}", response_model=product.ProductOut)
+async def update_product(product_id: str, product: product.ProductUpdate, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(Product).where(Product.id == product_id))
+    db_product = res.scalar_one_or_none()
+    if not db_product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    for field, value in product.model_dump(exclude_unset=True).items():
+        setattr(db_product, field, value)
+
+    await db.commit()
+    await db.refresh(db_product)
+    return db_product
+
+# DELETE
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(product_id: str, db: AsyncSession = Depends(get_db)):
+    res = await db.execute(select(Product).where(Product.id == product_id))
+    product = res.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+
+    await db.delete(product)
+    await db.commit()
+    return None

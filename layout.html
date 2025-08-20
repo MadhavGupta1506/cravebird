@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Commerce API Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <style>
+        :root {
+            --background-light: #ffffff;
+            --text-light: #1f2937;
+            --sidebar-bg-light: #f9fafb;
+            --border-light: #e5e7eb;
+            --highlight-light: #f3f4f6;
+            --card-bg-light: #ffffff;
+            --code-bg-light: #f9fafb;
+
+            --background-dark: #111827;
+            --text-dark: #d1d5db;
+            --sidebar-bg-dark: #1f2937;
+            --border-dark: #374151;
+            --highlight-dark: #374151;
+            --card-bg-dark: #1f2937;
+            --code-bg-dark: #111827;
+        }
+        html.dark {
+            --background: var(--background-dark);
+            --text-color: var(--text-dark);
+            --sidebar-bg: var(--sidebar-bg-dark);
+            --border-color: var(--border-dark);
+            --highlight-color: var(--highlight-dark);
+            --card-bg: var(--card-bg-dark);
+            --code-bg: var(--code-bg-dark);
+        }
+        html:not(.dark) {
+            --background: var(--background-light);
+            --text-color: var(--text-light);
+            --sidebar-bg: var(--sidebar-bg-light);
+            --border-color: var(--border-light);
+            --highlight-color: var(--highlight-light);
+            --card-bg: var(--card-bg-light);
+            --code-bg: var(--code-bg-light);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text-color);
+        }
+        .sidebar { background-color: var(--sidebar-bg); border-right-color: var(--border-color); }
+        .card { background-color: var(--card-bg); border-color: var(--border-color); }
+        .code-block { background-color: var(--code-bg); border-color: var(--border-color); }
+        .border-custom { border-color: var(--border-color); }
+        .highlight { background-color: var(--highlight-color); }
+        .search-input { background-color: var(--card-bg); border-color: var(--border-color); }
+        .method-get { background-color: #22c55e; color: white; }
+        .method-post { background-color: #3b82f6; color: white; }
+        .method-patch { background-color: #f97316; color: white; }
+        .method-put { background-color: #a855f7; color: white; }
+        .method-delete { background-color: #ef4444; color: white; }
+        .method-ws { background-color: #64748b; color: white; }
+        .sidebar-link.active {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        html.dark .sidebar-link.active {
+            color: #60a5fa;
+        }
+        .filtered-out {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        #leaflet-map-demo { height: 200px; border-radius: 0.5rem; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Top Navigation Bar -->
+    <nav class="fixed top-0 left-0 right-0 h-16 bg-[var(--background)]/80 backdrop-blur-sm border-b border-[var(--border-color)] z-40 flex items-center px-4 md:px-6">
+        <div class="flex items-center w-full">
+            <!-- Mobile Sidebar Toggle -->
+            <button id="mobile-menu-button" class="md:hidden mr-4 p-2 rounded-md text-[var(--text-color)]">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+            <span class="text-lg font-bold text-[var(--text-color)]">Quick Commerce Backend API</span>
+            <div class="flex-grow flex justify-center px-4">
+                <div class="relative w-full max-w-lg">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input id="search-bar" type="text" placeholder="Search docs (Press `/` to focus)" class="search-input w-full pl-10 pr-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="theme-toggle" class="p-2 rounded-md text-[var(--text-color)]" aria-label="Toggle theme">
+                    <svg id="theme-icon-light" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="theme-icon-dark" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+                <button id="copy-link-button" class="p-2 rounded-md text-[var(--text-color)]" aria-label="Copy page link">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar fixed top-16 left-0 w-64 h-[calc(100vh-4rem)] border-r p-4 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-30 overflow-y-auto">
+        <nav id="sidebar-nav" class="space-y-4 text-sm"></nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content" class="pt-16 md:pl-64 transition-all duration-300 ease-in-out">
+        <div class="p-4 md:p-8 max-w-5xl mx-auto">
+            <div id="breadcrumb" class="text-sm text-gray-500 dark:text-gray-400 mb-4"></div>
+            <div id="content-container" class="space-y-12">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </main>
+    
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-opacity opacity-0 pointer-events-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+    </button>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-20 right-8 bg-gray-800 text-white px-4 py-2 rounded-md shadow-lg transition-transform translate-x-[150%]">
+        Link copied to clipboard!
+    </div>
+
+    <script>
+        // --- DATA SOURCE ---
+        const apiData = {
+            overview: {
+                title: "Overview",
+                content: `
+                    <p>This document provides a comprehensive reference for the Quick Commerce Backend API. It covers the database schema, API endpoints, authentication mechanisms, and real-time tracking features.</p>
+                    <p>The API is designed to support a multi-role platform including Customers, Vendors, Admins, and Delivery Partners. All endpoints are RESTful and return JSON-formatted responses.</p>
+                `
+            },
+            databaseSchema: {
+                title: "Database Schema",
+                tables: {
+                    users: {
+                        name: "users",
+                        description: "Stores user account information and roles.",
+                        columns: [
+                            { name: "id", type: "UUID", constraints: "Primary Key", purpose: "Unique identifier for the user." },
+                            { name: "full_name", type: "VARCHAR", constraints: "Not Null", purpose: "User's full name." },
+                            { name: "email", type: "VARCHAR", constraints: "Not Null, Unique", purpose: "User's email for login." },
+                            { name: "password_hash", type: "VARCHAR", constraints: "Not Null", purpose: "Hashed password." },
+                            { name: "role", type: "ENUM", constraints: "Not Null, Default: 'CUSTOMER'", purpose: "User role (CUSTOMER, VENDOR, ADMIN, DELIVERY_PARTNER)." },
+                            { name: "created_at", type: "TIMESTAMP", constraints: "Default: NOW()", purpose: "Timestamp of account creation." },
+                        ]
+                    },
+                    categories: {
+                        name: "categories",
+                        description: "Stores product categories.",
+                        columns: [
+                            { name: "id", type: "UUID", constraints: "Primary Key", purpose: "Unique identifier for the category." },
+                            { name: "name", type: "VARCHAR", constraints: "Not Null, Unique", purpose: "Name of the category (e.g., 'Electronics')." },
+                            { name: "description", type: "TEXT", constraints: "", purpose: "Optional description of the category." },
+                        ]
+                    },
+                    products: {
+                        name: "products",
+                        description: "Stores information about products sold on the platform.",
+                        columns: [
+                            { name: "id", type: "UUID", constraints: "Primary Key", purpose: "Unique identifier for the product." },
+                            { name: "name", type: "VARCHAR", constraints: "Not Null", purpose: "Product name." },
+                            { name: "description", type: "TEXT", constraints: "", purpose: "Detailed product description." },
+                            { name: "price", type: "DECIMAL", constraints: "Not Null", purpose: "Current price of the product." },
+                            { name: "stock_quantity", type: "INTEGER", constraints: "Not Null", purpose: "Available stock." },
+                            { name: "vendor_id", type: "UUID", constraints: "Foreign Key (users.id)", purpose: "The vendor who owns the product." },
+                            { name: "category_id", type: "UUID", constraints: "Foreign Key (categories.id)", purpose: "The category the product belongs to." },
+                        ]
+                    },
+                    // ... other tables would go here ...
+                }
+            },
+            apiEndpoints: {
+                title: "API Endpoints",
+                groups: [
+                    {
+                        name: "Authentication (/auth)",
+                        endpoints: [
+                            {
+                                method: "POST",
+                                path: "/auth/register",
+                                description: "Registers a new user on the platform. Default role is 'CUSTOMER'.",
+                                permissions: "Public",
+                                requestBody: `{
+    "full_name": "string",
+    "email": "string (email format)",
+    "password": "string (min 8 chars)"
+}`,
+                                successResponse: `{
+    "message": "User registered successfully",
+    "user": {
+        "id": "uuid",
+        "full_name": "string",
+        "email": "string",
+        "role": "CUSTOMER"
+    }
+}`,
+                                errorResponses: [
+                                    { code: 400, reason: "Invalid input data (e.g., weak password, invalid email)." },
+                                    { code: 409, reason: "Email already exists." }
+                                ]
+                            },
+                            {
+                                method: "POST",
+                                path: "/auth/login",
+                                description: "Authenticates a user and returns a JWT.",
+                                permissions: "Public",
+                                requestBody: `{
+    "email": "string",
+    "password": "string"
+}`,
+                                successResponse: `{
+    "access_token": "string (JWT)",
+    "refresh_token": "string (JWT)"
+}`,
+                                errorResponses: [
+                                    { code: 401, reason: "Invalid credentials." }
+                                ]
+                            },
+                            {
+                                method: "POST",
+                                path: "/auth/refresh_token",
+                                description: "Refreshes an expired access token using a valid refresh token.",
+                                permissions: "Authenticated Users",
+                                requestBody: `{
+    "refresh_token": "string"
+}`,
+                                successResponse: `{
+    "access_token": "string (JWT)"
+}`,
+                                errorResponses: [
+                                    { code: 401, reason: "Invalid or expired refresh token." }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: "Admin (/admin)",
+                        endpoints: [
+                            {
+                                method: "GET",
+                                path: "/admin/users",
+                                description: "Retrieves a list of all users. Can be filtered by role.",
+                                permissions: "ADMIN",
+                                requestBody: null,
+                                successResponse: `[
+    {
+        "id": "uuid",
+        "full_name": "string",
+        "email": "string",
+        "role": "string"
+    }
+]`,
+                                errorResponses: [
+                                    { code: 403, reason: "Forbidden. User is not an admin." }
+                                ]
+                            },
+                            {
+                                method: "PATCH",
+                                path: "/admin/users/{user_id}/role",
+                                description: "Updates the role of a specific user.",
+                                permissions: "ADMIN",
+                                requestBody: `{
+    "role": "string (CUSTOMER, VENDOR, ADMIN, DELIVERY_PARTNER)"
+}`,
+                                successResponse: `{
+    "message": "User role updated successfully"
+}`,
+                                errorResponses: [
+                                    { code: 400, reason: "Invalid role provided." },
+                                    { code: 404, reason: "User not found." }
+                                ]
+                            },
+                             {
+                                method: "PATCH",
+                                path: "/admin/users/{user_id}/disable",
+                                description: "Disables a user by setting their role to CUSTOMER.",
+                                permissions: "ADMIN",
+                                requestBody: null,
+                                successResponse: `{
+    "message": "User disabled successfully"
+}`,
+                                errorResponses: [
+                                     { code: 404, reason: "User not found." }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: "Tracking (/tracking)",
+                        endpoints: [
+                            {
+                                method: "WS",
+                                path: "/tracking/orders/{order_id}",
+                                description: "Establishes a WebSocket connection for real-time location tracking. Delivery partners send location updates, and customers receive them.",
+                                permissions: "CUSTOMER, DELIVERY_PARTNER (for the specific order)",
+                                requestBody: `// For Delivery Partner (sending)
+{
+    "latitude": "float",
+    "longitude": "float"
+}`,
+                                successResponse: `// For Customer (receiving)
+{
+    "latitude": "float",
+    "longitude": "float",
+    "timestamp": "iso_string"
+}`,
+                                errorResponses: [
+                                    { code: 403, reason: "User does not have access to this order's tracking." }
+                                ],
+                                interactiveDemo: true
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // --- APP LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const contentContainer = document.getElementById('content-container');
+            const sidebarNav = document.getElementById('sidebar-nav');
+            const searchBar = document.getElementById('search-bar');
+            const breadcrumb = document.getElementById('breadcrumb');
+
+            // --- THEME ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIconLight = document.getElementById('theme-icon-light');
+            const themeIconDark = document.getElementById('theme-icon-dark');
+
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    themeIconLight.classList.add('hidden');
+                    themeIconDark.classList.remove('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeIconLight.classList.remove('hidden');
+                    themeIconDark.classList.add('hidden');
+                }
+            };
+
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+
+            themeToggle.addEventListener('click', () => {
+                const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+                localStorage.setItem('theme', newTheme);
+                applyTheme(newTheme);
+            });
+
+            // --- GENERATE CONTENT & SIDEBAR ---
+            let navHtml = '';
+            let contentHtml = '';
+
+            const slugify = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+            // Overview
+            const overviewId = slugify(apiData.overview.title);
+            navHtml += `<a href="#${overviewId}" class="sidebar-link block py-1 hover:text-blue-500">${apiData.overview.title}</a>`;
+            contentHtml += `<section id="${overviewId}" data-title="${apiData.overview.title}">
+                <h1 class="text-3xl font-bold mb-4">${apiData.overview.title}</h1>
+                ${apiData.overview.content}
+            </section>`;
+
+            // Database Schema
+            const dbSchemaId = slugify(apiData.databaseSchema.title);
+            navHtml += `<div class="pt-2"><h3 class="font-semibold text-sm uppercase text-gray-400">${apiData.databaseSchema.title}</h3>`;
+            contentHtml += `<section id="${dbSchemaId}" data-title="${apiData.databaseSchema.title}">
+                <h1 class="text-3xl font-bold mb-4">${apiData.databaseSchema.title}</h1>`;
+            
+            Object.values(apiData.databaseSchema.tables).forEach(table => {
+                const tableId = slugify(table.name);
+                navHtml += `<a href="#${tableId}" class="sidebar-link block py-1 pl-2 hover:text-blue-500">${table.name}</a>`;
+                contentHtml += `<details id="${tableId}" data-title="${apiData.databaseSchema.title} > ${table.name}" class="card p-4 rounded-lg border open:shadow-lg mb-4">
+                    <summary class="font-semibold text-lg cursor-pointer">${table.name}</summary>
+                    <p class="text-gray-500 dark:text-gray-400 mt-2 mb-4">${table.description}</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="border-b border-custom">
+                                <tr>
+                                    <th class="p-2">Column</th>
+                                    <th class="p-2">Type</th>
+                                    <th class="p-2">Constraints</th>
+                                    <th class="p-2">Purpose</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${table.columns.map(col => `
+                                    <tr class="border-b border-custom">
+                                        <td class="p-2 font-mono">${col.name}</td>
+                                        <td class="p-2 font-mono">${col.type}</td>
+                                        <td class="p-2">${col.constraints}</td>
+                                        <td class="p-2">${col.purpose}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </details>`;
+            });
+            navHtml += `</div>`;
+            contentHtml += `</section>`;
+
+            // API Endpoints
+            const apiEndpointsId = slugify(apiData.apiEndpoints.title);
+            navHtml += `<div class="pt-2"><h3 class="font-semibold text-sm uppercase text-gray-400">${apiData.apiEndpoints.title}</h3>`;
+            contentHtml += `<section id="${apiEndpointsId}" data-title="${apiData.apiEndpoints.title}">
+                <div class="flex justify-between items-center mb-4">
+                    <h1 class="text-3xl font-bold">${apiData.apiEndpoints.title}</h1>
+                    <div class="relative">
+                        <select id="role-filter" class="search-input appearance-none rounded-lg border py-2 pl-3 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            <option value="ALL">Filter by Role</option>
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="VENDOR">VENDOR</option>
+                            <option value="CUSTOMER">CUSTOMER</option>
+                            <option value="DELIVERY_PARTNER">DELIVERY_PARTNER</option>
+                        </select>
+                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>`;
+            
+            apiData.apiEndpoints.groups.forEach(group => {
+                const groupId = slugify(group.name);
+                navHtml += `<div class="pl-2"><h4 class="font-semibold mt-2">${group.name}</h4>`;
+                contentHtml += `<div id="${groupId}" data-title="${apiData.apiEndpoints.title} > ${group.name}" class="mb-8">
+                    <h2 class="text-2xl font-semibold border-b border-custom pb-2 mb-4">${group.name}</h2>`;
+                
+                group.endpoints.forEach(endpoint => {
+                    const endpointId = slugify(`${endpoint.method} ${endpoint.path}`);
+                    navHtml += `<a href="#${endpointId}" class="sidebar-link block py-1 pl-4 hover:text-blue-500 truncate" title="${endpoint.method} ${endpoint.path}">${endpoint.method} ${endpoint.path}</a>`;
+                    contentHtml += `
+                        <div id="${endpointId}" data-title="${apiData.apiEndpoints.title} > ${group.name} > ${endpoint.method} ${endpoint.path}" data-permissions="${endpoint.permissions}" class="endpoint-card card rounded-lg border mb-6 overflow-hidden transition-all duration-300">
+                            <div class="p-4 flex items-center justify-between cursor-pointer" onclick="this.parentElement.classList.toggle('open')">
+                                <div class="flex items-center gap-4">
+                                    <span class="method-${endpoint.method.toLowerCase()} font-bold text-sm px-3 py-1 rounded-md">${endpoint.method}</span>
+                                    <span class="font-mono text-lg">${endpoint.path}</span>
+                                </div>
+                                <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <div class="details-panel h-0 opacity-0 overflow-hidden transition-all duration-300">
+                                <div class="p-4 border-t border-custom">
+                                    <p class="mb-4">${endpoint.description}</p>
+                                    <p class="mb-4"><strong class="font-semibold">Permissions:</strong> <span class="bg-gray-200 dark:bg-gray-700 text-sm font-mono px-2 py-1 rounded">${endpoint.permissions}</span></p>
+                                    
+                                    ${endpoint.requestBody ? `
+                                        <details class="mb-4">
+                                            <summary class="font-semibold cursor-pointer">Request Body</summary>
+                                            <div class="code-block border rounded-lg mt-2 relative">
+                                                <button class="copy-code-btn absolute top-2 right-2 p-1.5 rounded-md bg-gray-300/50 dark:bg-gray-600/50 hover:bg-gray-300 dark:hover:bg-gray-600">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                </button>
+                                                <pre class="p-4 text-sm overflow-x-auto"><code class="language-json">${endpoint.requestBody}</code></pre>
+                                            </div>
+                                        </details>
+                                    ` : ''}
+
+                                    ${endpoint.successResponse ? `
+                                        <details class="mb-4">
+                                            <summary class="font-semibold cursor-pointer">Success Response (200 OK)</summary>
+                                            <div class="code-block border rounded-lg mt-2 relative">
+                                                <button class="copy-code-btn absolute top-2 right-2 p-1.5 rounded-md bg-gray-300/50 dark:bg-gray-600/50 hover:bg-gray-300 dark:hover:bg-gray-600">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                </button>
+                                                <pre class="p-4 text-sm overflow-x-auto"><code class="language-json">${endpoint.successResponse}</code></pre>
+                                            </div>
+                                        </details>
+                                    ` : ''}
+
+                                    ${endpoint.errorResponses && endpoint.errorResponses.length > 0 ? `
+                                        <details>
+                                            <summary class="font-semibold cursor-pointer">Error Responses</summary>
+                                            <div class="mt-2 space-y-2">
+                                                ${endpoint.errorResponses.map(err => `
+                                                    <div class="flex items-center text-sm">
+                                                        <span class="font-mono bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-0.5 rounded mr-2">${err.code}</span>
+                                                        <span>${err.reason}</span>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </details>
+                                    ` : ''}
+
+                                    ${endpoint.interactiveDemo ? `
+                                        <div class="mt-6 border-t border-custom pt-4">
+                                            <h4 class="font-semibold mb-2">Interactive Demo</h4>
+                                            <div class="card p-4 rounded-lg border">
+                                                <div class="flex gap-4 mb-4">
+                                                    <button class="ws-role-btn flex-1 p-2 rounded-md bg-blue-500 text-white" data-role="DELIVERY_PARTNER">Simulate as Delivery Partner</button>
+                                                    <button class="ws-role-btn flex-1 p-2 rounded-md bg-gray-300 dark:bg-gray-600" data-role="CUSTOMER">Simulate as Customer</button>
+                                                </div>
+                                                <div id="ws-partner-controls" class="hidden">
+                                                    <p class="text-sm mb-2">Click to send mock location data:</p>
+                                                    <button id="ws-send-location" class="w-full p-2 rounded-md bg-green-500 text-white">Send Location Update</button>
+                                                </div>
+                                                <div id="ws-customer-view">
+                                                    <p class="text-sm mb-2">Waiting for location updates...</p>
+                                                    <div id="leaflet-map-demo"></div>
+                                                    <pre id="ws-log" class="code-block border rounded-lg mt-2 p-2 h-24 overflow-y-auto text-xs"></pre>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                contentHtml += `</div>`;
+                navHtml += `</div>`;
+            });
+            contentHtml += `</section>`;
+            navHtml += `</div>`;
+
+            sidebarNav.innerHTML = navHtml;
+            contentContainer.innerHTML = contentHtml;
+            
+            // --- INTERACTIVITY ---
+
+            // Mobile Menu
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            mobileMenuButton.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+                sidebar.classList.toggle('translate-x-0');
+            });
+            
+            // Close sidebar on link click (mobile)
+            sidebarNav.addEventListener('click', (e) => {
+                if(e.target.tagName === 'A' && window.innerWidth < 768) {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebar.classList.remove('translate-x-0');
+                }
+            });
+
+            // Endpoint card expansion
+            document.querySelectorAll('.endpoint-card').forEach(card => {
+                const detailsPanel = card.querySelector('.details-panel');
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('button, a, details')) return;
+                    this.classList.toggle('open');
+                    if (this.classList.contains('open')) {
+                        detailsPanel.style.height = detailsPanel.scrollHeight + 'px';
+                        detailsPanel.style.opacity = 1;
+                    } else {
+                        detailsPanel.style.height = '0px';
+                        detailsPanel.style.opacity = 0;
+                    }
+                });
+            });
+
+            // Copy code buttons
+            document.querySelectorAll('.copy-code-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const code = button.nextElementSibling.querySelector('code').innerText;
+                    navigator.clipboard.writeText(code).then(() => {
+                        showToast('Code copied!');
+                    });
+                });
+            });
+            
+            const copyLinkButton = document.getElementById('copy-link-button');
+            copyLinkButton.addEventListener('click', () => {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    showToast('Link copied to clipboard!');
+                });
+            });
+
+            // Toast notification
+            const toast = document.getElementById('toast');
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.remove('translate-x-[150%]');
+                toast.classList.add('translate-x-0');
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-0');
+                    toast.classList.add('translate-x-[150%]');
+                }, 2000);
+            }
+
+            // Search functionality
+            searchBar.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                document.querySelectorAll('#content-container section, #content-container details, #content-container .endpoint-card').forEach(el => {
+                    const title = (el.dataset.title || el.id).toLowerCase();
+                    if (title.includes(query)) {
+                        el.style.display = '';
+                    } else {
+                        el.style.display = 'none';
+                    }
+                });
+            });
+
+            // Role filter
+            const roleFilter = document.getElementById('role-filter');
+            roleFilter.addEventListener('change', (e) => {
+                const selectedRole = e.target.value;
+                document.querySelectorAll('.endpoint-card').forEach(card => {
+                    const permissions = card.dataset.permissions;
+                    if (selectedRole === 'ALL' || permissions.includes(selectedRole) || permissions === 'Public' || permissions === 'Authenticated Users') {
+                        card.classList.remove('filtered-out');
+                    } else {
+                        card.classList.add('filtered-out');
+                    }
+                });
+            });
+
+            // Scrollspy, Breadcrumb, and Active Link Highlighting
+            const sections = document.querySelectorAll('#content-container [id]');
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        const activeLink = document.querySelector(`.sidebar-link[href="#${id}"]`);
+                        
+                        sidebarLinks.forEach(link => link.classList.remove('active'));
+                        if (activeLink) {
+                            activeLink.classList.add('active');
+                            // Scroll sidebar to active link
+                            activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        }
+                        
+                        // Update breadcrumb
+                        const title = entry.target.dataset.title || entry.target.id;
+                        breadcrumb.textContent = title.replace(/ > /g, ' / ');
+                        
+                        // Update URL hash
+                        history.replaceState(null, null, `#${id}`);
+                    }
+                });
+            }, { rootMargin: "-50% 0px -50% 0px", threshold: 0 });
+
+            sections.forEach(section => observer.observe(section));
+
+            // Back to Top button
+            const backToTopButton = document.getElementById('back-to-top');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopButton.classList.remove('opacity-0', 'pointer-events-none');
+                } else {
+                    backToTopButton.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
+            backToTopButton.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Keyboard shortcuts
+            window.addEventListener('keydown', (e) => {
+                if (e.key === '/') {
+                    e.preventDefault();
+                    searchBar.focus();
+                }
+                if (e.key === 't') {
+                    e.preventDefault();
+                    themeToggle.click();
+                }
+            });
+            
+            // WebSocket Demo
+            const wsDemoSection = document.querySelector('[data-permissions*="DELIVERY_PARTNER"]');
+            if (wsDemoSection) {
+                const partnerBtn = document.querySelector('.ws-role-btn[data-role="DELIVERY_PARTNER"]');
+                const customerBtn = document.querySelector('.ws-role-btn[data-role="CUSTOMER"]');
+                const partnerControls = document.getElementById('ws-partner-controls');
+                const customerView = document.getElementById('ws-customer-view');
+                const sendLocationBtn = document.getElementById('ws-send-location');
+                const wsLog = document.getElementById('ws-log');
+                
+                let map;
+                let marker;
+                const initialCoords = [22.7196, 75.8577]; // Indore, MP
+
+                const initMap = () => {
+                    if(map) return;
+                    map = L.map('leaflet-map-demo').setView(initialCoords, 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+                    marker = L.marker(initialCoords).addTo(map).bindPopup('Delivery Location').openPopup();
+                };
+
+                const switchRole = (role) => {
+                    if (role === 'DELIVERY_PARTNER') {
+                        partnerBtn.classList.add('bg-blue-500', 'text-white');
+                        partnerBtn.classList.remove('bg-gray-300', 'dark:bg-gray-600');
+                        customerBtn.classList.remove('bg-blue-500', 'text-white');
+                        customerBtn.classList.add('bg-gray-300', 'dark:bg-gray-600');
+                        partnerControls.style.display = 'block';
+                        customerView.style.display = 'none';
+                    } else { // CUSTOMER
+                        customerBtn.classList.add('bg-blue-500', 'text-white');
+                        customerBtn.classList.remove('bg-gray-300', 'dark:bg-gray-600');
+                        partnerBtn.classList.remove('bg-blue-500', 'text-white');
+                        partnerBtn.classList.add('bg-gray-300', 'dark:bg-gray-600');
+                        partnerControls.style.display = 'none';
+                        customerView.style.display = 'block';
+                        setTimeout(initMap, 0);
+                    }
+                };
+                
+                partnerBtn.addEventListener('click', () => switchRole('DELIVERY_PARTNER'));
+                customerBtn.addEventListener('click', () => switchRole('CUSTOMER'));
+                
+                let locationCounter = 0;
+                sendLocationBtn.addEventListener('click', () => {
+                    locationCounter++;
+                    const newLat = initialCoords[0] + (Math.random() - 0.5) * 0.01 * locationCounter;
+                    const newLng = initialCoords[1] + (Math.random() - 0.5) * 0.01 * locationCounter;
+                    const locationData = {
+                        latitude: newLat.toFixed(6),
+                        longitude: newLng.toFixed(6),
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // Simulate receiving data
+                    const logEntry = document.createElement('div');
+                    logEntry.textContent = `[${new Date().toLocaleTimeString()}] Received: ${JSON.stringify(locationData)}`;
+                    wsLog.appendChild(logEntry);
+                    wsLog.scrollTop = wsLog.scrollHeight;
+                    
+                    if (map && marker) {
+                        const newLatLng = [locationData.latitude, locationData.longitude];
+                        marker.setLatLng(newLatLng).bindPopup(`Updated at ${new Date().toLocaleTimeString()}`).openPopup();
+                        map.panTo(newLatLng);
+                    }
+                    showToast('Mock location sent!');
+                });
+                
+                // Initialize to customer view
+                switchRole('CUSTOMER');
+            }
+
+        });
+    </script>
+</body>
+</html>

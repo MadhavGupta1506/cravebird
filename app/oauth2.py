@@ -1,12 +1,16 @@
 from sqlalchemy.future import select
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
+from .models import user
+
+from .schemas import schemas
 from .config import settings
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 import datetime as dt
 from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status
-from . import config, schemas, models, database
+from . import config, database
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 async def create_access_token(data: dict):
@@ -19,7 +23,7 @@ async def create_access_token(data: dict):
 def verify_access_token(token: str, credentials_exception):
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=settings.algorithm)
-        user_id = payload.get("user_id")
+        user_id = payload.get("id")
         print(user_id)
         if user_id is None:
             raise credentials_exception
@@ -32,15 +36,17 @@ def verify_access_token(token: str, credentials_exception):
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
     credentials_exception=HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail=f"Could not validate credentials",headers={"WWW-Authenticate":"Bearer"})
     access_token = verify_access_token(token, credentials_exception)
-    user = await db.execute(select(models.Users).filter(models.Users.user_id == str(access_token.id)))
-    user = user.scalars().first()
+    curr_user = await db.execute(select(user.Users).filter(user.Users.id == str(access_token.id)))
+    curr_user = curr_user.scalars().first()
 
-    return user
+    return curr_user
 
 # Function to require a specific role for access
 def require_role(required_role: list):
-    def role_checker(user: models.Users = Depends(get_current_user)):
-        if user.role not in required_role:
+    def role_checker(user: user.Users = Depends(get_current_user)):
+        if (user.role).lower() not in required_role:
+            # print(user.role.lower())
             raise HTTPException(status_code=403, detail="Forbidden: Insufficient role")
         return user
+    
     return role_checker
