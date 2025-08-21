@@ -19,24 +19,42 @@ async def create_product(product: product.ProductCreate,user:user_table=Depends(
     await db.refresh(new_product)
     return new_product
 
-# READ (all)
+# READ (all) for vendor
 @router.get("/", response_model=list[product.ProductOut])
-async def get_products(db: AsyncSession = Depends(get_db),user:user_table=Depends(get_current_user),role:str=Depends(require_role(["admin","vendor"]))):
+async def get_products_by_vendor(db: AsyncSession = Depends(get_db),user:user_table=Depends(get_current_user),role:str=Depends(require_role(["admin","vendor"]))):
     res = await db.execute(select(product_table).where(product_table.vendor_id==user.id))
     products = res.scalars().all()
     if not products:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Products not found")
     return products
 
-# READ (one)
+# READ (one) for vendor
 @router.get("/{product_id}", response_model=product.ProductOut)
-async def get_product(product_id: str,user:user_table=Depends(get_current_user), db: AsyncSession = Depends(get_db),role:str=Depends(require_role(["admin","vendor"]))):
+async def get_product_by_vendor(product_id: str,user:user_table=Depends(get_current_user), db: AsyncSession = Depends(get_db),role:str=Depends(require_role(["admin","vendor"]))):
     res = await db.execute(select(product_table).where(product_table.id == product_id and product_table.vendor_id==user.id))
     product = res.scalar_one_or_none()
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     
     return product
+
+# READ (all) for customer
+@router.get("/all", response_model=list[product.ProductOut])
+async def get_products(db: AsyncSession = Depends(get_db), user:user_table=Depends(get_current_user)):
+    res = await db.execute(select(product_table))
+    products = res.scalars().all()
+    if not products:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Products not found")
+    return products
+
+@router.get("/one/{id}",response_model=product.ProductOut)
+async def get_product(id:str,user:user_table=Depends(get_current_user),db:AsyncSession=Depends(get_db)):
+    res= await db.execute(select(product_table).where(product_table.id==id))
+    product=res.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    return product
+
 
 # UPDATE
 @router.put("/{product_id}", response_model=product.ProductOut)
