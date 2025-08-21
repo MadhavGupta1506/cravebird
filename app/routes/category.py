@@ -27,13 +27,13 @@ async def create_category(
 
 # READ (all)
 @router.get("/", response_model=list[category_schema.CategoryOut])
-async def get_categories(db: AsyncSession = Depends(get_db)):
+async def get_categories(db: AsyncSession = Depends(get_db), user: user_table=Depends(get_current_user)):
     res = await db.execute(select(Category))
     return res.scalars().all()
 
 # READ (one)
 @router.get("/{category_id}", response_model=category_schema.CategoryOut)
-async def get_category(category_id: str, db: AsyncSession = Depends(get_db)):
+async def get_category(category_id: str, db: AsyncSession = Depends(get_db), user: user_table=Depends(get_current_user)):
     res = await db.execute(select(Category).where(Category.id == category_id))
     category = res.scalar_one_or_none()
     if not category:

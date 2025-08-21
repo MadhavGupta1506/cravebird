@@ -15,7 +15,7 @@ SQLALCHEMY_DATABASE_URL = f"postgresql+asyncpg://{settings.database_username}:{s
 
 
 # Create a session factory for managing database sessions.
-engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True, future=True,connect_args={"statement_cache_size": 0, "ssl": ssl_context})
+engine = create_async_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True,pool_recycle=1800,echo=True, future=True,connect_args={"statement_cache_size": 0, "ssl": ssl_context})
 
 AsyncSessionLocal = sessionmaker(bind=engine,class_=AsyncSession,expire_on_commit=False)
 # Base class for declarative models.
