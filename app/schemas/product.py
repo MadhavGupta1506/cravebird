@@ -7,6 +7,7 @@ class ProductBase(BaseModel):
     price: float
     stock: int
     image:str
+    category_id:UUID
 
 class ProductCreate(ProductBase):
     pass
@@ -16,6 +17,8 @@ class ProductUpdate(BaseModel):
     description: str | None = None
     price: float | None = None
     stock: int | None = None
+    category_id:UUID
+
 
 class ProductOut(ProductBase):
     id: UUID

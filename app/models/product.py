@@ -14,7 +14,7 @@ class Product(Base):
     stock = Column(Integer, nullable=False, default=0)
     image = Column(String(255), nullable=True)
 
-    category_id = Column(UUID(as_uuid=True), ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)
+    category_id = Column(UUID(as_uuid=True), ForeignKey("categories.id", ondelete="SET NULL"), nullable=False, index=True)
     vendor_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     category = relationship("Category", back_populates="products", lazy="joined")
