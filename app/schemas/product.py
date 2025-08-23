@@ -25,3 +25,14 @@ class ProductOut(ProductBase):
 
     class Config:
         from_attributes = True   # Needed for SQLAlchemy → Pydantic
+
+class SearchProduct(BaseModel):
+    query: str
+
+class SearchProductOut(ProductBase):
+    id: UUID
+    vendor_name: str 
+
+    class Config:
+        from_attributes = True
+        
