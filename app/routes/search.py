@@ -37,3 +37,34 @@ async def search_products(
         for p in products
     ]
     return result
+@router.get("/search/category/{category_id}", response_model=list[product.SearchProductOut])
+async def search_products_by_category(
+    category_id:str ,
+    db: AsyncSession = Depends(get_db),
+    user: user_table = Depends(get_current_user)
+):
+    res = await db.execute(
+        select(product_table).where(product_table.category_id == category_id)
+    )
+    products = res.scalars().all()
+
+    if not products:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No products found in this category"
+        )
+
+    result = [
+        {
+            "id": p.id,
+            "name": p.name,
+            "description": p.description,
+            "price": p.price,
+            "stock": p.stock,
+            "category_id": p.category_id,
+            "image": p.image,
+            "vendor_name": f"{p.vendor.firstname} {p.vendor.lastname}"
+        }
+        for p in products
+    ]
+    return result
