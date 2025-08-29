@@ -8,7 +8,7 @@ from app.schemas import product
 from app.database import get_db
 router = APIRouter(tags=["Search Products"])
 
-@router.get("/search", response_model=list[product.SearchProductOut])
+@router.post("/search", response_model=list[product.SearchProductOut])
 async def search_products(
     query: product.SearchProduct,
     db: AsyncSession = Depends(get_db),

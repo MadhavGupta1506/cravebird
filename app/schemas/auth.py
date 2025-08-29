@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,EmailStr
 from typing import Optional
 from uuid import UUID
 class UserCreate(BaseModel):
-    email:str 
+    email:EmailStr
     firstname:str
     lastname:str
     password:str
@@ -11,7 +11,7 @@ class UserCreate(BaseModel):
     
 class UserOut(BaseModel):
     id:UUID 
-    email:str 
+    email: EmailStr
     firstname:str
     lastname:str
     phone_number:str
