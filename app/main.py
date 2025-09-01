@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 
-from .models import user, product,category,order,order_item
+from .models import user, product,category,cart
 from . import database
-from .routes import login_signup, product,category,search
+from .routes import cart_crud, login_signup, product,category,search,cart_crud
 # from .routes.restaurant import get_restaurants, menu
 # from .routes.user import Address
 
@@ -33,6 +33,9 @@ app.include_router(login_signup.router)
 app.include_router(product.router)
 app.include_router(category.router)
 app.include_router(search.router)
+app.include_router(cart_crud.router)
+
+
 @app.get("/")
 async def read_root(db: Session = Depends(database.get_db)):
     
