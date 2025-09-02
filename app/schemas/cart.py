@@ -13,6 +13,6 @@ class CartItem(BaseModel):
     total_item_price: float
 
 class Cart(BaseModel):
-    user_id: int
+    user_id: UUID
     items: list[CartItem]
     total_price: float
