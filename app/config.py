@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     database_password: str
     database_name: str
     database_username: str
+    database_ssl: bool = False
     secret_key: str
     algorithm: str
     email_code:str

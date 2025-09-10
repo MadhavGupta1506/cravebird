@@ -19,3 +19,5 @@ class Product(Base):
 
     category = relationship("Category", back_populates="products", lazy="joined")
     vendor = relationship("Users", back_populates="products", lazy="joined")
+    # Link order items for this product
+    order_items = relationship("OrderItem", back_populates="product", lazy="selectin")

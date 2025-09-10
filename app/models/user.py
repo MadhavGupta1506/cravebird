@@ -23,4 +23,6 @@ class Users(Base):
     role=Column(Enum(UserRole),nullable=False,index=True,default="customer")
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     products = relationship("Product", back_populates="vendor", lazy="selectin")
+    # Orders placed by this customer
+    orders = relationship("Order", back_populates="user", lazy="selectin")
 

@@ -85,3 +85,11 @@ async def delete_product(product_id: str, user:user_table=Depends(get_current_us
     await db.delete(product)
     await db.commit()
     return None
+
+@router.get("/vendor/{vendor_id}", response_model=list[product.ProductOut])
+async def get_products_by_specific_vendor(vendor_id: str, db: AsyncSession = Depends(get_db), user:user_table=Depends(get_current_user)):
+    res = await db.execute(select(product_table).where(product_table.vendor_id == vendor_id))
+    products = res.scalars().all()
+    if not products:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Products not found for this vendor")
+    return products

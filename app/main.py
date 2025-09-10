@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from .models import user, product,category,cart
 from . import database
-from .routes import cart_crud, login_signup, product,category,search,cart_crud
+from .routes import cart_crud, login_signup, product,category,search,cart_crud, order as order_routes, notifications
 # from .routes.restaurant import get_restaurants, menu
 # from .routes.user import Address
 
@@ -34,6 +34,8 @@ app.include_router(product.router)
 app.include_router(category.router)
 app.include_router(search.router)
 app.include_router(cart_crud.router)
+app.include_router(order_routes.router)
+app.include_router(notifications.router)
 
 
 @app.get("/")
